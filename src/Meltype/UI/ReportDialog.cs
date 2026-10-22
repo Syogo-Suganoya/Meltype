@@ -55,24 +55,28 @@ internal sealed class ReportDialog : Form
         var reportBox = new GroupBox { Dock = DockStyle.Bottom, Height = 150, Text = "報告する", Padding = new Padding(8) };
 
         var copy = new Button { Text = "ログをコピー", AutoSize = true };
+        // GitHub の画面でひな形を選び直すと、自動で入った実行環境が消える。手で貼り直せるようにする (issue #1018)
+        var copyEnvironment = new Button { Text = "実行環境をコピー", AutoSize = true };
         // フォームが無いときは GitHub の「不具合の報告」のひな形を、実行環境などを入れて開く (issue #877)
         var open = new Button { Text = Config.ProjectInfo.HasReportForm ? "フォームで報告 (おすすめ・アカウント不要)" : "GitHub で不具合を報告", AutoSize = true };
         var close = new Button { Text = "閉じる", AutoSize = true, DialogResult = DialogResult.Cancel };
         var copied = new Label { AutoSize = true, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 8, 0, 0) };
-        copy.Click += (_, _) =>
+        void Copy(string text, string what)
         {
             try
             {
-                if (_log.TextLength == 0) return;
-                Clipboard.SetText(_log.Text);
-                copied.Text = "コピーしました";
+                if (text.Length == 0) return;
+                Clipboard.SetText(text);
+                copied.Text = $"{what}をコピーしました";
             }
             catch (Exception ex)
             {
                 copied.Text = "コピーできませんでした";
-                Diagnostics.Log.Warn($"ログをコピーできませんでした: {ex.Message}");
+                Diagnostics.Log.Warn($"{what}をコピーできませんでした: {ex.Message}");
             }
-        };
+        }
+        copy.Click += (_, _) => Copy(_log.Text, "ログ");
+        copyEnvironment.Click += (_, _) => Copy(environment.Text, "実行環境");
         open.Click += (_, _) =>
         {
             try
@@ -88,7 +92,7 @@ internal sealed class ReportDialog : Form
         // GitHub のアカウントがある人向け (返事や修正の通知が届く)。公開 (1.0.0) まではリポジトリが非公開なので出さない。
         if (AppInfo.IsPublicRelease) reportBox.Controls.Add(GitHubLinks());
         var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, FlowDirection = FlowDirection.RightToLeft, AutoSize = true, Padding = new Padding(6), Margin = new Padding(0, 4, 0, 0) };
-        buttons.Controls.AddRange(close, open, copy, copied);
+        buttons.Controls.AddRange(close, open, copy, copyEnvironment, copied);
         reportBox.Controls.Add(buttons);
 
         Controls.Add(logBox);
