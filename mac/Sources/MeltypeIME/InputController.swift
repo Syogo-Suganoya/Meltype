@@ -332,7 +332,7 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
         }
         client.setMarkedText(NSAttributedString(attributedString: text), selectionRange: NSRange(location: length, length: 0), replacementRange: NSRange(location: NSNotFound, length: 0))
         hasMarkedText = length > 0
-        updateCandidates(view)
+        updateCandidates(view, client: client)
         showSuggestion(view.suggestion, client: client)
     }
 
@@ -416,7 +416,7 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
         }
     }
 
-    private func updateCandidates(_ view: CompositionView) {
+    private func updateCandidates(_ view: CompositionView, client: IMKTextInput) {
         guard let window = candidatesWindow else { return }
         if view.candidates.count > 1 {
             // 作り直し・選択で候補ウィンドウから candidateSelectionChanged が来ても、本体に返さない。
@@ -429,6 +429,7 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
                 window.show(kIMKLocateCandidatesBelowHint)
                 windowIndex = 0
             }
+            raiseCandidatesWindow(window, above: client)
             if view.selectedIndex >= 0 && view.selectedIndex < view.candidates.count {
                 selectInWindow(window, index: view.selectedIndex)
             }
@@ -442,6 +443,18 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
 
     /// 候補ウィンドウで今選ばれている候補の番号 (一覧を作り直すと先頭に戻る)。
     private var windowIndex = 0
+
+    /// Spotlight のように、ふつうのウィンドウより高い表示レベルの入力欄では、候補ウィンドウが入力欄の裏に隠れる (issue #976)。
+    /// IMKCandidates には表示レベルを変える口が無いので、このプロセスにある候補ウィンドウを探し、入力欄より 1 つ上に上げる。
+    /// ふつうのアプリ (入力欄の表示レベルが低い) では、候補ウィンドウの方がもともと上にあるので何も変えない。
+    private func raiseCandidatesWindow(_ candidates: IMKCandidates, above client: IMKTextInput) {
+        let level = NSWindow.Level(rawValue: Int(client.windowLevel()) + 1)
+        let frame = candidates.candidateFrame()
+        for window in NSApp.windows where window.isVisible && window.level.rawValue < level.rawValue &&
+            (window.frame.integral == frame.integral || String(describing: type(of: window)).hasPrefix("IMK")) {
+            window.level = level
+        }
+    }
 
     /// 候補ウィンドウの選択を index 番目の候補に合わせる。
     /// selectCandidate(withIdentifier:) では選択が動かず、selectedCandidate() も今の選択とずれることがある (macOS 26)。
