@@ -1664,6 +1664,14 @@ internal static class CompositionTests
         k.Type("infobesity\n");
         Assert.Equal("infobesity", k.Host.Document);
     }
+
+    [Test]
+    public static void Issue915_PrintenvStaysEnglish()
+    {
+        var k = new Keyboard();
+        k.Type("printenv\n");
+        Assert.Equal("printenv", k.Host.Document);
+    }
   
     [Test]
     public static void Issue505_LiveConvertIgnoresSymbolsInLength()
