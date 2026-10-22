@@ -1664,6 +1664,14 @@ internal static class CompositionTests
         k.Type("infobesity\n");
         Assert.Equal("infobesity", k.Host.Document);
     }
+
+    [Test]
+    public static void Issue876_DoomscrollStaysEnglish()
+    {
+        var k = new Keyboard();
+        k.Type("doomscroll\n");
+        Assert.Equal("doomscroll", k.Host.Document);
+    }
   
     [Test]
     public static void Issue505_LiveConvertIgnoresSymbolsInLength()
