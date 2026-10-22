@@ -453,7 +453,8 @@ public sealed class CompositionController
         }
         if (!_converting && PreviewCandidates() is { } preview && index >= 0 && index < preview.Count)
         {
-            _clauses = [new Clause("ご", false, preview) { Raw = _text.Raw, Expanded = true }];
+            // 変換エンジンの候補 (語・碁・後) も足せるように、Expanded にしない (issue #1015)
+            _clauses = [new Clause("ご", false, preview) { Raw = _text.Raw }];
             _selectedClause = 0;
             _converting = true;
         }
