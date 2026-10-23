@@ -1329,6 +1329,13 @@ public sealed class CompositionController
             case VirtualKeys.Up:
                 NextCandidate(-1);
                 return true;
+            case 0x22 /* Page Down */:
+                // 候補の一覧を 1 ページ (9 件) 進める / 戻す (Microsoft IME と同じ。今までは確定してアプリに送っていた: issue #1016)
+                NextCandidatePage(+1);
+                return true;
+            case 0x21 /* Page Up */:
+                NextCandidatePage(-1);
+                return true;
             case VirtualKeys.Right when shift:
                 Resize(+1);
                 return true;
@@ -2340,6 +2347,17 @@ public sealed class CompositionController
         var clause = _clauses[_selectedClause];
         if (!clause.IsEnglish && !clause.Expanded) Expand(clause);
         clause.Index = (clause.Index + step + clause.Candidates.Count) % clause.Candidates.Count;
+        clause.Changed = true;
+    }
+
+    /// <summary>次 / 前のページの先頭の候補を選ぶ。最後のページの次は最初のページ (NextCandidate と同じく回る)。</summary>
+    private void NextCandidatePage(int step)
+    {
+        var clause = _clauses[_selectedClause];
+        if (!clause.IsEnglish && !clause.Expanded) Expand(clause);
+        var pages = (clause.Candidates.Count + CandidatePageSize - 1) / CandidatePageSize;
+        var page = (Math.Max(0, clause.Index) / CandidatePageSize + step + pages) % pages;
+        clause.Index = page * CandidatePageSize;
         clause.Changed = true;
     }
 

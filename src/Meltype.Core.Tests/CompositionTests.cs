@@ -3237,6 +3237,29 @@ internal static class CompositionTests
     }
 
     [Test]
+    public static void Issue1016_PageDownAndUp_MoveCandidatePages()
+    {
+        // 報告: 候補が 10 件以上あるとき、Page Up / Page Down でページを送りたい (今までは確定してアプリに送っていた)
+        var k = new Keyboard(moreCandidates: reading => reading == "かわ" ? [.. Enumerable.Range(1, 20).Select(i => $"川{i}")] : []);
+        k.Type("kawa ");
+        var count = k.Host.View!.Candidates.Count;
+        Assert.True(count > 18 && count <= 27, $"候補は 3 ページ ({count} 件)");
+        Assert.Equal(0, k.Host.View.SelectedIndex);
+        k.TypeKeys((0x22, false));
+        Assert.Equal(9, k.Host.View!.SelectedIndex, "次のページの先頭");
+        Assert.Equal(k.Host.View.Candidates[9], k.Host.View.Clauses![0]);
+        Assert.Equal("", k.Host.Document, "確定しない");
+        k.TypeKeys((0x22, false));
+        Assert.Equal(18, k.Host.View!.SelectedIndex, "その次のページの先頭");
+        k.TypeKeys((0x22, false));
+        Assert.Equal(0, k.Host.View!.SelectedIndex, "最後のページの次は最初のページ");
+        k.TypeKeys((0x21, false));
+        Assert.Equal(18, k.Host.View!.SelectedIndex, "最初のページの前は最後のページ");
+        k.TypeKeys((0x21, false));
+        Assert.Equal(9, k.Host.View!.SelectedIndex, "前のページの先頭");
+    }
+
+    [Test]
     public static void Backspace_ThenRetype_RereadsRomaji()
     {
         // 報告: test の最後の t を消して u → 「てsう」になる。
