@@ -206,8 +206,8 @@ const Help = [
   '| `/test-repro <SHA> <キー>` | PR のコードで `/repro` | メンテナー |',
   '| `/test-jht <SHA> <文> [/ 読み]` | PR のコードで `/jht` | メンテナー |',
   '| `/test-explain <SHA> <キー>` | PR のコードで `/explain` | メンテナー |',
-  '| `/release <版>` | 版 (例: `1.2.3`) のタグとリリースの下書きを作り、Windows・Mac・Linux の配布物のビルドを始める。csproj・Info.plist の版が <版> でなければ止める | 管理者 |',
-  '| `/pre-release <版>` | `/release` のプレリリース版 (版は `1.2.3-pre.1` の形) | 管理者 |',
+  '| `/release <版>` | 版 (例: `1.2.3`) のタグとリリースの下書きを作り、Windows・Mac・Linux の配布物のビルドを始める。csproj・Info.plist の版が <版> でなければ止める | オーナー (admin・maintain の権限) |',
+  '| `/pre-release <版>` | `/release` のプレリリース版 (版は `1.2.3-pre.1` の形) | オーナー (admin・maintain の権限) |',
   '| `/self-assign` | 自分を Issue の Assignees に入れる (担当になる)。`要トリアージ` の間はメンテナーだけ | だれでも |',
   '| `/help` | この一覧 | だれでも |',
   '',
@@ -225,7 +225,7 @@ async function releaseCommand(issue, command, version) {
   const reply = text => upsertComment(issue, `release-${event.comment.id}`, text);
   const pre = command === 'pre-release';
   const permission = await gh('GET', `/collaborators/${event.comment.user.login}/permission`).then(r => r.permission).catch(() => 'none');
-  if (!['admin', 'maintain'].includes(permission)) return reply(`\`/${command}\` は管理者 (admin / maintain) だけが使えます。`);
+  if (!['admin', 'maintain'].includes(permission)) return reply(`\`/${command}\` はオーナー (admin・maintain の権限がある人) だけが使えます。`);
   const shape = pre ? /^\d+\.\d+\.\d+-pre\.\d+$/ : /^\d+\.\d+\.\d+$/;
   if (!shape.test(version)) return reply(`版を ${pre ? '`1.2.3-pre.1`' : '`1.2.3`'} の形で書いてください (例: \`/${command} ${pre ? '1.2.3-pre.1' : '1.2.3'}\`)。`);
   await react('eyes');
