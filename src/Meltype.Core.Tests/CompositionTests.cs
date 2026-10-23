@@ -3255,6 +3255,9 @@ internal static class CompositionTests
         Assert.True(hisashiburi is [("きょう", null), ("ひさしぶり", "久しぶり")], "きょう|ひさしぶり → きょう|久しぶり (#872)");
         Assert.True(dictionary.Split("なさそう")?.Any(p => p.Word == "なさそう") == true, "なさそう → なさそう (#825)");
         Assert.True(dictionary.Split("になった")?.Any(p => p.Word == "になった") == true, "になった → になった (#917)");
+        // 報告 (#823): いしょくじょうたい → い食事ょうたい (しょくじ を じょ の途中で切っていた)
+        Assert.True(dictionary.Split("いしょくじょうたい")?.Any(p => p.Word == "食事") != true, "いしょくじょうたい に 食事 を当てない");
+        Assert.True(dictionary.Split("しょくじをする")?.Any(p => p.Word == "食事") == true, "しょくじ だけなら 食事 のまま");
         Assert.Equal(0, dictionary.Count, "同梱の語句はユーザー辞書の一覧に出さない");
         // 報告 (#968): かんそうりつ の候補に 乾燥率
         Assert.True(CandidateDictionary.Load(null).Lookup("かんそうりつ").Contains("乾燥率"), "かんそうりつ → 乾燥率");
