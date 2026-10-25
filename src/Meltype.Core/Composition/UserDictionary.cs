@@ -217,7 +217,7 @@ public sealed class UserDictionary
             string? matched = null;
             for (var length = Math.Min(_maxReadingLength, kana.Length - i); length >= (kana.Length == 1 ? MinRegisteredReadingLength : MinSplitReadingLength); length--)
             {
-                // 拗音・小さい母音 (じょ・ふぁ) の途中では切らない (いしょくじょうたい が しょくじ|ょうたい で い食事ょうたい になっていた: issue #823)
+                // 拗音・小さい母音 (じょ・ふぁ) の途中では切らない (いしょくじょうたい が しょくじ|ょうたい で い食事ょうたい になっていた)
                 if (i + length < kana.Length && IsSmallKana(kana[i + length])) continue;
                 if (_byReading.ContainsKey(kana.Substring(i, length)))
                 {
