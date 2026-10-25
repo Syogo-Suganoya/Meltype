@@ -444,7 +444,7 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
     /// 候補ウィンドウで今選ばれている候補の番号 (一覧を作り直すと先頭に戻る)。
     private var windowIndex = 0
 
-    /// Spotlight のように、ふつうのウィンドウより高い表示レベルの入力欄では、候補ウィンドウが入力欄の裏に隠れる (issue #976)。
+    /// Spotlight のように、ふつうのウィンドウより高い表示レベルの入力欄では、候補ウィンドウが入力欄の裏に隠れる。
     /// IMKCandidates には表示レベルを変える口が無いので、このプロセスにある候補ウィンドウを探し、入力欄より 1 つ上に上げる。
     /// ふつうのアプリ (入力欄の表示レベルが低い) では、候補ウィンドウの方がもともと上にあるので何も変えない。
     private func raiseCandidatesWindow(_ candidates: IMKCandidates, above client: IMKTextInput) {
