@@ -21,7 +21,7 @@
 
 ### bot でリリースする
 
-版を上げて main に入れたあと、Issue か Pull Request のコメントの 1 行目に、管理者 (admin / maintain) が次のように書きます。
+版を上げて main に入れたあと、Issue か Pull Request のコメントの 1 行目に、オーナー (admin・maintain の権限がある人) が次のように書きます。
 
 - `/release 1.2.3` … 通常の版
 - `/pre-release 1.2.3-pre.1` … プレリリース
