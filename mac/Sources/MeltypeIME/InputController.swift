@@ -444,8 +444,8 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
     /// 候補ウィンドウで今選ばれている候補の番号 (一覧を作り直すと先頭に戻る)。
     private var windowIndex = 0
 
-    /// 候補ウィンドウのもともとの表示レベル。変える前に一度だけ読む。
-    private static var defaultCandidatesLevel: NSWindow.Level?
+    /// 候補ウィンドウ (IMKUIPanel) のもともとの表示レベル (macOS 15 で確かめた値。IMK のウィンドウはこの 1 つだけだった)。
+    private static let defaultCandidatesLevel = NSWindow.Level(rawValue: 20)
 
     /// Spotlight のように、ふつうのウィンドウより高い表示レベルの入力欄では、候補ウィンドウや予測候補のパネルが入力欄の裏に隠れる。
     /// なので、もともとの表示レベルと「入力欄より 1 つ上」の高い方にする。
@@ -454,12 +454,10 @@ final class MeltypeInputController: IMKInputController, ModeServiceTarget {
         NSWindow.Level(rawValue: max(base.rawValue, Int(client.windowLevel()) + 1))
     }
 
-    /// IMKCandidates には表示レベルを変える口が無いので、このプロセスにある IMK のウィンドウ (候補ウィンドウ・注釈は IMKUIPanel) を探して変える。
+    /// IMKCandidates には表示レベルを変える口が無いので、このプロセスにある IMK のウィンドウ (候補ウィンドウは IMKUIPanel) を探して変える。
     private func setCandidatesWindowLevel(above client: IMKTextInput) {
         for window in NSApp.windows where String(describing: type(of: window)).hasPrefix("IMK") {
-            let base = Self.defaultCandidatesLevel ?? window.level
-            Self.defaultCandidatesLevel = base
-            window.level = panelLevel(base, above: client)
+            window.level = panelLevel(Self.defaultCandidatesLevel, above: client)
         }
     }
 
