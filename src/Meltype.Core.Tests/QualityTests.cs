@@ -307,6 +307,9 @@ internal static class Quality
         new("大文字", "AInituite", "AIについて"),
         new("大文字", "AIdekiru", "AIできる"),
         new("大文字", "McAfeeto", "McAfeeと"),
+        // 大文字の略語 + 日本語 (BL|まんが)。空白で区切れば英語のまま (issue #1263)
+        new("大文字", "BLmanga", "BLまんが"),
+        new("大文字", "BL manga", "BL manga"),
 
         // --- #406 ---
         new("英語", "overcute", "overcute"),
