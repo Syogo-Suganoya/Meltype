@@ -11,6 +11,7 @@ public enum ProtectedKind
     Email,
     PosixPath,
     WindowsPath,
+    Version,
 }
 
 /// <summary>
@@ -23,13 +24,13 @@ public readonly record struct ProtectedSpan(int Start, int Length, ProtectedKind
 }
 
 /// <summary>
-/// 未確定の原文から、技術的な文字列 (メンション・URL・メール・パス) の区間を見つける。
+/// 未確定の原文から、技術的な文字列 (メンション・URL・メール・パス・版の番号) の区間を見つける。
 /// 「ネットワーク上で妥当か」ではなく「構造の強い開始条件を満たすか」だけを見る (妥当性の検証ではない)。
 /// 初期実装は読みやすい線形スキャン。
 /// </summary>
 public static class ProtectedSpanScanner
 {
-    /// <summary>この位置から始まる保護区間を、優先順 (URL → WindowsPath → Email → Mention → PosixPath) で返す。</summary>
+    /// <summary>この位置から始まる保護区間を、優先順 (URL → WindowsPath → Email → Mention → PosixPath → Version) で返す。</summary>
     public static IReadOnlyList<ProtectedSpan> Scan(string raw)
     {
         var spans = new List<ProtectedSpan>();
@@ -74,7 +75,7 @@ public static class ProtectedSpanScanner
         if (TryWindowsPath(raw, start) is { } windowsPath) return windowsPath;
         // メールのローカル部は @ から左へ探す。先に保護したメンション等の文字を再利用しない。
         if (TryEmail(raw, start) is { } email && email.Start >= previousEnd) return email;
-        return TryMention(raw, start) ?? TryPosixPath(raw, start);
+        return TryMention(raw, start) ?? TryPosixPath(raw, start) ?? TryVersion(raw, start);
     }
 
     // ---- URL ----
@@ -190,6 +191,38 @@ public static class ProtectedSpanScanner
             return new ProtectedSpan(start, end - start, ProtectedKind.PosixPath);
         }
         return null;
+    }
+
+    // ---- 版の番号 ----
+    /// <summary>
+    /// プレリリースの付いた版の番号 (v1.3.1-pre.3、1.2.0-beta、v2.0-rc1)。数字.数字 の後の - からは英数字なので、- を長音、pre を ぷれ にしない (issue #1194)。
+    /// 数字だけの版 (1.3.1) や日付 (2026-10-05) は、もともと数字のまま出るので対象にしない。- だけ打ったところ (v1.3.1-) から保護する。
+    /// 日本語に続けて打つ (kyouhav1.3.1-pre.3) ので、直前が英字でも始めてよい。- の後は 英数字 と .数字 まで (pre.3 の後の wotukau は含めない)。
+    /// </summary>
+    private static ProtectedSpan? TryVersion(string raw, int start)
+    {
+        if (start > 0 && (char.IsAsciiDigit(raw[start - 1]) || raw[start - 1] is '.' or '_' or '-' or '~' or '/' or '\\' or '%' or '+' or '@')) return null;
+        var end = start;
+        if (end < raw.Length && raw[end] is 'v' or 'V') end++;
+        var numbers = 0;
+        while (true)
+        {
+            var digits = end;
+            while (end < raw.Length && char.IsAsciiDigit(raw[end])) end++;
+            if (end == digits) return null;
+            numbers++;
+            if (end < raw.Length && raw[end] == '.' && end + 1 < raw.Length && char.IsAsciiDigit(raw[end + 1])) end++;
+            else break;
+        }
+        if (numbers < 2 || end >= raw.Length || raw[end] != '-') return null;
+        end++;
+        while (end < raw.Length && char.IsAsciiLetterOrDigit(raw[end])) end++;
+        while (end + 1 < raw.Length && raw[end] == '.' && char.IsAsciiDigit(raw[end + 1]))
+        {
+            end++;
+            while (end < raw.Length && char.IsAsciiDigit(raw[end])) end++;
+        }
+        return new ProtectedSpan(start, end - start, ProtectedKind.Version);
     }
 
     /// <summary>語の区切り (直前が識別子・パスの文字でない)。</summary>

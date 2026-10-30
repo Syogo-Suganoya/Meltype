@@ -134,6 +134,10 @@ internal static class Quality
         new("混在", "xperiaZ5", "xperiaZ5"),
         new("混在", "kyouhaA", "きょうはA"),
         new("混在", "holoX", "holoX"),
+        // プレリリースの付いた版の番号の - を長音、pre を ぷれ にしない (issue #1194)
+        new("記号・数字", "v1.3.1-pre.3", "v1.3.1-pre.3"),
+        new("混在", "kyouhav1.3.1-pre.3", "きょうはv1.3.1-pre.3"),
+        new("混在", "v1.3.1-pre.3wotukau", "v1.3.1-pre.3をつかう"),
         // ツール名 (Claude Code): code の de を助詞にしない (issue #1001)
         new("英語", "claudecode", "claudecode"),
         new("混在", "claudecodewotukau", "claudecodeをつかう"),
