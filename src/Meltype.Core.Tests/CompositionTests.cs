@@ -3003,6 +3003,14 @@ internal static class CompositionTests
         k.Press(VirtualKeys.Left); // iphone
         k.Type(" ");
         Assert.Equal("iPhone", k.Host.View!.Clauses![0], "候補に正しい大文字小文字の形がある");
+
+        // 報告 (#1276): ph の候補に pH (phsikennsi → pH試験紙)
+        var ph = new Keyboard();
+        ph.Type("phsikennsi");
+        ph.Press(VirtualKeys.Left); // しけんし
+        ph.Press(VirtualKeys.Left); // ph
+        ph.Type(" ");
+        Assert.Equal("pH", ph.Host.View!.Clauses![0], "ph の候補に pH");
     }
 
     [Test]
