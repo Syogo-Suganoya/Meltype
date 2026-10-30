@@ -30,6 +30,10 @@ internal static class ProtectionTests
                      ("C:/Users/taro/project", ProtectedKind.WindowsPath),
                      ("\\\\server\\share\\nihongo.txt", ProtectedKind.WindowsPath),
                      ("@User_123", ProtectedKind.Mention),
+                     ("v1.3.1-pre.3", ProtectedKind.Version), // issue #1194
+                     ("1.2.0-beta", ProtectedKind.Version),
+                     ("v2.0-rc1", ProtectedKind.Version),
+                     ("v1.3.1-", ProtectedKind.Version), // - を打ったところから
                  })
         {
             var spans = ProtectedSpanScanner.Scan(raw);
@@ -49,6 +53,7 @@ internal static class ProtectionTests
                  {
                      "a/b", "1/2", "///", "@", "/", ":", "kyouhagithubnipushshita",
                      "konnichiwa.", "OPENAI_API_KEY", "camelCase", "2026-10-05", "hello", "upah_setu",
+                     "1.3.1", "v2-pre", "ro-maji",
                  })
         {
             var spans = ProtectedSpanScanner.Scan(raw);
