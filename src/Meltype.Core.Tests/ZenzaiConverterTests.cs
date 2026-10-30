@@ -15,7 +15,7 @@ internal static class ZenzaiConverterTests
     /// <summary>受け取った prompt を記録して、answer(prompt) を content にして返す。status が 200 以外ならそのエラーを返す。</summary>
     private sealed class FakeServer : IDisposable
     {
-        private readonly HttpListener _listener = new();
+        private HttpListener _listener;
         public List<string> Prompts { get; } = [];
         public int Status { get; set; } = 200;
         public Func<string, string> Answer { get; set; } = _ => "";
@@ -27,17 +27,26 @@ internal static class ZenzaiConverterTests
         public double Probability { get; set; } = 0.9;
         public Uri Endpoint { get; }
 
-        public FakeServer()
+        /// <param name="nextPort">試すポートを選ぶ (テストで使用中のポートを選ばせる)。省略すると 20000〜59999 から選ぶ。</param>
+        public FakeServer(Func<int>? nextPort = null)
         {
-            var port = 0;
+            nextPort ??= () => Random.Shared.Next(20000, 60000);
             for (var tries = 0; tries < 20; tries++)
             {
-                port = Random.Shared.Next(20000, 60000);
-                try { _listener.Prefixes.Add($"http://127.0.0.1:{port}/"); _listener.Start(); break; }
-                catch (HttpListenerException) { _listener.Prefixes.Clear(); }
+                var port = nextPort();
+                // Linux の HttpListener は Start() に失敗すると自分を閉じるので、試すたびに作り直す (issue #1178)
+                _listener = new HttpListener();
+                try
+                {
+                    _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+                    _listener.Start();
+                    Endpoint = new Uri($"http://127.0.0.1:{port}/");
+                    Task.Run(Loop);
+                    return;
+                }
+                catch (HttpListenerException) { _listener.Close(); }
             }
-            Endpoint = new Uri($"http://127.0.0.1:{port}/");
-            Task.Run(Loop);
+            throw new InvalidOperationException("FakeServer: 空いているポートが見つからず、起動できませんでした (20 回試した)");
         }
 
         private void Loop()
@@ -63,6 +72,33 @@ internal static class ZenzaiConverterTests
         }
 
         public void Dispose() => _listener.Close();
+    }
+
+    [Test]
+    public static void FakeServer_TriesAnotherPortWhenPortIsInUse()
+    {
+        using var busy = new FakeServer();
+        var used = busy.Endpoint.Port;
+        var ports = new Queue<int>([used, used, used]);
+        var tries = 0;
+        using var server = new FakeServer(() => { tries++; return ports.Count > 0 ? ports.Dequeue() : Random.Shared.Next(20000, 60000); });
+        Assert.True(server.Endpoint.Port != used, $"使用中のポート ({used}) をあきらめて、別のポートで起動する ({server.Endpoint.Port})");
+        Assert.True(tries >= 4, $"使用中のポートを 3 回試してから次へ進む ({tries} 回)");
+    }
+
+    [Test]
+    public static void FakeServer_FailsClearlyWhenNoPortIsFree()
+    {
+        using var busy = new FakeServer();
+        var tries = 0;
+        var failed = false;
+        try
+        {
+            using var server = new FakeServer(() => { tries++; return busy.Endpoint.Port; });
+        }
+        catch (InvalidOperationException) { failed = true; }
+        Assert.True(failed, "どのポートでも起動できないときは例外にする");
+        Assert.Equal(20, tries, "20 回試してからあきらめる");
     }
 
     [Test]
