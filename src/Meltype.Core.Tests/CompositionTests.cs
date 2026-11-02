@@ -2205,6 +2205,18 @@ internal static class CompositionTests
     }
 
     [Test]
+    public static void Issue1389_InotifyStaysEnglish()
+    {
+        // Linux のファイル監視の inotify を いnotify にしない
+        var k = new Keyboard();
+        k.Type("inotify\n");
+        Assert.Equal("inotify", k.Host.Document);
+        k = new Keyboard();
+        k.Type("inotifydekansisuru\n");
+        Assert.Equal("inotifyでかんしする", k.Host.Document, "後ろに日本語が続いても");
+    }
+
+    [Test]
     public static void Issue735_TverStaysEnglish()
     {
         var k = new Keyboard();
