@@ -2213,6 +2213,18 @@ internal static class CompositionTests
     }
 
     [Test]
+    public static void Issue1402_NeovideStaysEnglish()
+    {
+        // Neovim の GUI の neovide を ねおゔぃで にしない
+        var k = new Keyboard();
+        k.Type("neovide\n");
+        Assert.Equal("neovide", k.Host.Document);
+        k = new Keyboard();
+        k.Type("neovidewotukau\n");
+        Assert.Equal("neovideをつかう", k.Host.Document, "後ろに日本語が続いても");
+    }
+
+    [Test]
     public static void Issue344_Issue341_NumbersOfferKanjiAndEra()
     {
         Assert.Equal("二〇二六|二千二十六|弐千弐拾六|令和8年", string.Join("|", NumberCandidates.For("2026")), "2026");
