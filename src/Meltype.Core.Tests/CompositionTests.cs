@@ -2189,6 +2189,18 @@ internal static class CompositionTests
     }
 
     [Test]
+    public static void Issue1365_MetadataStaysEnglish()
+    {
+        // metadata を metaだた にしない
+        var k = new Keyboard();
+        k.Type("metadata\n");
+        Assert.Equal("metadata", k.Host.Document);
+        k = new Keyboard();
+        k.Type("metadatawoyomu\n");
+        Assert.Equal("metadataをよむ", k.Host.Document, "後ろに日本語が続いても");
+    }
+
+    [Test]
     public static void Issue732_MobisodeStaysEnglish()
     {
         var k = new Keyboard();
