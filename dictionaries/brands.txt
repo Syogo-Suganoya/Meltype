@@ -230,3 +230,8 @@
 ひょんだい Hyundai
 ひゅんだい Hyundai
 れくさす Lexus
+
+# Issue #1318 (音響ソフトの会社と製品)
+あいぞとーぷ iZotope
+にゅーとろん Neutron
+おぞん Ozone

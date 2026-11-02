@@ -1817,6 +1817,10 @@ internal static class CompositionTests
         // JMdict に無い社名 (brands.txt)
         Assert.True(dictionary.Lookup("しゃおみ").Contains("Xiaomi"), "しゃおみ → Xiaomi");
         Assert.True(dictionary.Lookup("でぃすこーど").Contains("Discord"), "ディスコード → Discord");
+        // 報告 (#1318): 音響ソフトの会社と製品
+        Assert.True(dictionary.Lookup("あいぞとーぷ").Contains("iZotope"), "アイゾトープ → iZotope");
+        Assert.True(dictionary.Lookup("にゅーとろん").Contains("Neutron"), "ニュートロン → Neutron");
+        Assert.True(dictionary.Lookup("おぞん").Contains("Ozone"), "オゾン → Ozone");
     }
 
     [Test]
@@ -2210,6 +2214,15 @@ internal static class CompositionTests
         var k = new Keyboard();
         k.Type("tver\n");
         Assert.Equal("tver", k.Host.Document);
+    }
+
+    [Test]
+    public static void Issue1319_IZotopeStaysEnglish()
+    {
+        // 大文字の混じった社名 iZotope を いZotope にしない
+        var k = new Keyboard();
+        k.Type("iZotope\n");
+        Assert.Equal("iZotope", k.Host.Document);
     }
 
     [Test]
