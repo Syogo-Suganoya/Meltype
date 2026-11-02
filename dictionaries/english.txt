@@ -254,3 +254,6 @@ docs
 
 # Issue #887
 exe
+
+# Issue #1389
+inotify
